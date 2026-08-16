@@ -171,3 +171,145 @@ footer { min-height: 34px; display: flex; align-items: center; justify-content: 
   .projection-row code { font-size: 9px; letter-spacing: .06em; }
   footer span:nth-child(2), footer span:nth-child(3) { display: none; }
 }
+
+/* Sparse command-window layout. */
+.terminal-simple {
+  --ink: #d2d2d2;
+  --muted: #6f6f6f;
+  --faint: #3b3b3b;
+  --line: #171717;
+  min-height: 100vh;
+  padding: 26px 30px 18px;
+  background: #050505;
+  color: var(--ink);
+  font-family: Consolas, "Cascadia Mono", "Courier New", monospace;
+}
+
+.terminal-simple .topline {
+  min-height: 46px;
+  padding: 0 0 14px;
+  border: 0;
+  background: transparent;
+}
+
+.terminal-simple .brand-block { gap: 11px; }
+.terminal-simple .brand-mark { width: 34px; height: 34px; opacity: .82; }
+.terminal-simple h1 { font: 400 13px/1 Consolas, "Cascadia Mono", monospace; letter-spacing: .08em; }
+.terminal-simple .version { color: #555; font-size: 10px; }
+
+.prompt-line {
+  display: flex;
+  gap: 8px;
+  padding: 0 0 14px;
+  color: #777;
+  border-bottom: 1px solid #171717;
+  font-size: 11px;
+}
+.prompt-line span { color: #bcbcbc; }
+
+.terminal-simple .workspace {
+  display: grid;
+  grid-template-columns: minmax(620px, 1.55fr) minmax(340px, .75fr);
+  gap: 28px;
+  border: 0;
+}
+
+.terminal-simple .tape-panel,
+.terminal-simple .analysis-panel { background: transparent; }
+.terminal-simple .tape-panel { border: 0; }
+.terminal-simple .analysis-panel {
+  height: calc(100vh - 141px);
+  min-height: 440px;
+  padding-left: 28px;
+  border-left: 1px solid #171717;
+  overflow: hidden;
+}
+
+.terminal-simple .section-heading {
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+}
+.terminal-simple .section-heading h2 {
+  color: #8a8a8a;
+  font: 400 10px/1 Consolas, "Cascadia Mono", monospace;
+  letter-spacing: .04em;
+}
+.terminal-simple .row-count { color: #555; font-size: 9px; }
+
+.terminal-simple .tape-grid {
+  grid-template-columns: 82px 48px 82px 94px 104px 1fr;
+  gap: 10px;
+}
+.terminal-simple .tape-head {
+  height: 28px;
+  padding: 0;
+  border-bottom: 1px solid #181818;
+  color: #555;
+  font-size: 8px;
+}
+.terminal-simple .tape-body {
+  height: calc(100vh - 203px);
+  min-height: 390px;
+  scrollbar-color: #252525 #050505;
+}
+.terminal-simple .tape-row {
+  min-height: 32px;
+  padding: 0;
+  border-bottom: 1px solid #101010;
+  color: #858585;
+  font-size: 10px;
+}
+.terminal-simple .tape-row:hover { background: #090909; color: #c0c0c0; }
+.terminal-simple .tape-row strong { color: #bdbdbd; font-weight: 400; }
+.terminal-simple .tape-row a { color: #666; text-decoration: none; }
+.terminal-simple .side {
+  display: inline;
+  width: auto;
+  height: auto;
+  border: 0;
+  background: transparent;
+  font-size: 9px;
+  font-weight: 400;
+}
+.terminal-simple .side-buy { color: #d5d5d5; }
+.terminal-simple .side-sell { color: #686868; }
+
+.terminal-simple .projection-card { padding: 10px 0; border: 0; }
+.terminal-simple .projection { padding: 8px 0; border: 0; background: transparent; }
+.terminal-simple .projection-row { min-height: 24px; grid-template-columns: 48px 1fr; }
+.terminal-simple .projection-row small { color: #444; font-size: 8px; }
+.terminal-simple .projection-row code { color: #a8a8a8; font-size: 12px; letter-spacing: .12em; }
+.terminal-simple .projection-buy { color: #bdbdbd; }
+.terminal-simple .projection-sell { color: #3f3f3f; }
+
+.terminal-simple footer {
+  min-height: 28px;
+  padding: 10px 0 0;
+  border: 0;
+  border-top: 1px solid #141414;
+  background: transparent;
+  color: #444;
+  font-size: 8px;
+}
+
+@media (max-width: 980px) {
+  .terminal-simple { padding: 18px; }
+  .terminal-simple .workspace { grid-template-columns: 1fr; gap: 0; }
+  .terminal-simple .analysis-panel {
+    height: auto;
+    min-height: 0;
+    padding: 18px 0 8px;
+    border: 0;
+    border-top: 1px solid #171717;
+  }
+  .terminal-simple .tape-body { height: 52vh; min-height: 320px; }
+}
+
+@media (max-width: 640px) {
+  .terminal-simple { padding: 14px; }
+  .terminal-simple .tape-grid { grid-template-columns: 70px 42px 70px 1fr; }
+  .terminal-simple .tape-grid > *:nth-child(4),
+  .terminal-simple .tape-grid > *:nth-child(5) { display: none; }
+  .terminal-simple .projection-row code { font-size: 9px; letter-spacing: .04em; }
+}

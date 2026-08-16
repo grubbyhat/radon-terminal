@@ -358,9 +358,9 @@ export default function Home() {
 
   const chronological = useMemo(() => [...trades].sort((a, b) => a.timestamp - b.timestamp), [trades]);
   const newestFirst = useMemo(() => [...chronological].reverse(), [chronological]);
-  const chart = useMemo(() => buildChart(chronological), [chronological]);
   const projection = useMemo(() => buildRadonProjection(chronological), [chronological]);
   const projectionMax = useMemo(() => Math.max(0.001, ...projection.flat().map(Math.abs)), [projection]);
+  /* Compact terminal view deliberately omits summary cards. */
   const stats = useMemo(() => {
     const buySol = chronological.filter((trade) => trade.side === "BUY").reduce((sum, trade) => sum + trade.sol, 0);
     const sellSol = chronological.filter((trade) => trade.side === "SELL").reduce((sum, trade) => sum + trade.sol, 0);
@@ -379,6 +379,62 @@ export default function Home() {
     };
   }, [chronological]);
 
+  return (
+    <main className="terminal-shell terminal-simple">
+      <header className="topline">
+        <div className="brand-block">
+          <img className="brand-mark" src="/rt-logo.png" alt="Radon Terminal logo" />
+          <h1>RADON TERMINAL</h1>
+        </div>
+        <span className="version">rt.exe</span>
+      </header>
+
+      <div className="prompt-line"><span>C:\RT&gt;</span> radon --watch</div>
+
+      <section className="workspace">
+        <div className="tape-panel">
+          <div className="section-heading">
+            <h2>transactions</h2>
+            <span className="row-count">[{trades.length.toString().padStart(3, "0")}]</span>
+          </div>
+
+          <div className="tape-head tape-grid" aria-hidden="true">
+            <span>TIME</span><span>SIDE</span><span>SOL</span><span>AMOUNT</span><span>WALLET</span><span>TX</span>
+          </div>
+          <div className="tape-body" aria-live="polite">
+            {newestFirst.map((trade) => (
+              <div className="tape-row tape-grid" key={trade.id}>
+                <time>{new Date(trade.timestamp).toLocaleTimeString("en-GB", { hour12: false, fractionalSecondDigits: 3 })}</time>
+                <span className={`side side-${trade.side.toLowerCase()}`}>{trade.side}</span>
+                <strong>{fixed(trade.sol, 4)}</strong>
+                <span>{abbreviated(trade.tokens)}</span>
+                <span title={trade.wallet}>{compact(trade.wallet, 4, 4)}</span>
+                <a href={`https://solscan.io/tx/${trade.signature}`} target="_blank" rel="noreferrer" title={trade.signature}>{compact(trade.signature, 3, 3)}</a>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <aside className="analysis-panel">
+          <div className="section-heading"><h2>radon_projection</h2></div>
+          <div className="projection-card">
+            <div className="projection" aria-label="Discrete Radon projection of transaction flow">
+              {projection.map((row, rowIndex) => (
+                <div className="projection-row" key={rowIndex}>
+                  <small>{(rowIndex * 25).toString().padStart(3, "0")}deg</small>
+                  <code>{row.map((value, index) => <span className={value >= 0 ? "projection-buy" : "projection-sell"} key={index}>{projectionGlyph(value, projectionMax)}</span>)}</code>
+                </div>
+              ))}
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <footer><span>RADON TERMINAL</span><span>{new Date().toISOString().slice(0, 19).replace("T", " ")} UTC</span></footer>
+    </main>
+  );
+
+  /* Previous dense dashboard retained temporarily for reference.
   return (
     <main className="terminal-shell">
       <header className="topline">
@@ -512,4 +568,5 @@ export default function Home() {
       </footer>
     </main>
   );
+  */
 }
