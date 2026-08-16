@@ -383,9 +383,7 @@ export default function Home() {
     <main className="terminal-shell">
       <header className="topline">
         <div className="brand-block">
-          <pre className="brand-mark" aria-label="RT logo">{`+----+
-| RT |
-+----+`}</pre>
+          <img className="brand-mark" src="/rt-logo.png" alt="Radon Terminal logo" />
           <div>
             <h1>RADON TERMINAL</h1>
             <p>MARKET-STRUCTURE RECONSTRUCTION</p>
