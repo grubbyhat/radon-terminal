@@ -234,9 +234,7 @@ export default function Home() {
 
   useEffect(() => {
     let stopped = false;
-    let socket: WebSocket | null = null;
-    let retryTimer: ReturnType<typeof setTimeout> | null = null;
-    let backoff = 600;
+    let eventSource: EventSource | null = null;
     const seen = new Set<string>();
     const queue: string[] = [];
     let active = 0;
@@ -285,51 +283,18 @@ export default function Home() {
       drain();
     };
 
-    const scheduleReconnect = () => {
-      if (stopped) return;
-      setConnection("RETRYING");
-      retryTimer = setTimeout(connect, backoff);
-      backoff = Math.min(backoff * 1.7, 8000);
-    };
-
     const connect = () => {
       if (stopped) return;
       setConnection("CONNECTING");
       setStreamError("");
-      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-      socket = new WebSocket(`${protocol}//${window.location.host}/api/stream`);
-
-      socket.addEventListener("open", () => {
-        backoff = 600;
-        socket?.send(JSON.stringify({
-          jsonrpc: "2.0",
-          id: 1,
-          method: "transactionSubscribe",
-          params: [
-            { failed: false, accountInclude: [MINT] },
-            {
-              commitment: "confirmed",
-              encoding: "jsonParsed",
-              transactionDetails: "full",
-              showRewards: false,
-              maxSupportedTransactionVersion: 0,
-            },
-          ],
-        }));
-      });
-
-      socket.addEventListener("message", (event) => {
+      eventSource = new EventSource("/api/stream");
+      eventSource.addEventListener("open", () => setConnection("CONNECTING"));
+      eventSource.addEventListener("message", (event) => {
         let payload: any;
         try { payload = JSON.parse(String(event.data)); } catch { return; }
 
         if (payload.id === 1 && payload.error) {
           setSource("HELIUS LOG SUBSCRIBE");
-          socket?.send(JSON.stringify({
-            jsonrpc: "2.0",
-            id: 2,
-            method: "logsSubscribe",
-            params: [{ mentions: [MINT] }, { commitment: "confirmed" }],
-          }));
           return;
         }
         if ((payload.id === 1 || payload.id === 2) && payload.result != null) {
@@ -343,6 +308,31 @@ export default function Home() {
           return;
         }
 
+        if (payload.method === "rtTrade") {
+          const result = payload.params?.result;
+          const signature = String(result?.signature || "");
+          const sol = Number(result?.sol || 0);
+          const tokens = Number(result?.tokens || 0);
+          if (!signature || !sol || !tokens || seen.has(signature)) return;
+          seen.add(signature);
+          const priceSol = sol / tokens;
+          const trade: TapeTrade = {
+            id: signature,
+            signature,
+            slot: Number(result?.slot || 0),
+            timestamp: Number(result?.timestamp || Date.now()),
+            side: result?.side === "SELL" ? "SELL" : "BUY",
+            sol,
+            tokens,
+            priceSol,
+            marketCapSol: supplyRef.current > 0 ? priceSol * supplyRef.current : 0,
+            wallet: String(result?.wallet || ""),
+          };
+          setLastSlot(trade.slot);
+          setTrades((current) => [...current, trade].slice(-MAX_TAPE));
+          return;
+        }
+
         if (payload.method === "transactionNotification") {
           const result = payload.params?.result;
           enqueue(result?.signature || result?.transaction?.signature);
@@ -352,8 +342,9 @@ export default function Home() {
         }
       });
 
-      socket.addEventListener("close", scheduleReconnect);
-      socket.addEventListener("error", () => {
+      eventSource.addEventListener("error", () => {
+        if (stopped) return;
+        setConnection("RETRYING");
         setStreamError("Stream interrupted");
       });
     };
@@ -361,8 +352,7 @@ export default function Home() {
     connect();
     return () => {
       stopped = true;
-      if (retryTimer) clearTimeout(retryTimer);
-      socket?.close();
+      eventSource?.close();
     };
   }, []);
 
