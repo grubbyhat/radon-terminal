@@ -10,14 +10,14 @@ export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
   const host = requestHeaders.get("x-forwarded-host") || requestHeaders.get("host") || "localhost:3000";
   const protocol = requestHeaders.get("x-forwarded-proto") || (host.startsWith("localhost") ? "http" : "https");
-  const imageUrl = `${protocol}://${host}/rt-logo-transparent.png`;
+  const imageUrl = `${protocol}://${host}/rt-logo.png`;
   return {
     title: "RT — Radon Terminal",
     description: "Live Solana market-structure reconstruction from a Helius transaction stream.",
     icons: {
-      icon: "/rt-logo-transparent.png",
-      shortcut: "/rt-logo-transparent.png",
-      apple: "/rt-logo-transparent.png",
+      icon: "/rt-logo.png",
+      shortcut: "/rt-logo.png",
+      apple: "/rt-logo.png",
     },
     openGraph: {
       title: "RT — Radon Terminal",

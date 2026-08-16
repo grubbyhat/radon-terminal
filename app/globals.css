@@ -414,3 +414,82 @@ footer { min-height: 34px; display: flex; align-items: center; justify-content: 
   }
   .web-art { width: min(100%, 430px); }
 }
+
+.terminal-simple .github-link {
+  color: #62625f;
+  font-size: 9px;
+  letter-spacing: .02em;
+}
+.terminal-simple .github-link:hover { color: #aaa9a3; }
+.terminal-simple .analysis-panel {
+  min-height: 640px;
+  overflow: auto;
+}
+.terminal-simple .chart-card {
+  padding: 8px 0 20px;
+  border: 0;
+  border-bottom: 1px solid #111;
+}
+.terminal-simple .chart-title {
+  margin-bottom: 10px;
+  color: #555552;
+  font-size: 8px;
+  letter-spacing: .02em;
+}
+.terminal-simple .chart-wrap {
+  height: 210px;
+  border: 0;
+  background: #060606;
+}
+.terminal-simple .chart-gridline {
+  stroke: #171717;
+  stroke-dasharray: 1.5 2.5;
+}
+.terminal-simple .chart-line {
+  stroke: #a4a49f;
+  stroke-width: .8;
+  filter: drop-shadow(0 0 2px rgba(255,255,255,.12));
+}
+.terminal-simple .chart-area { fill: rgba(255,255,255,.025); }
+.terminal-simple .chart-high,
+.terminal-simple .chart-low { color: #3f3f3c; }
+
+.pressure-block {
+  padding: 17px 0 19px;
+  border-bottom: 1px solid #111;
+}
+.pressure-labels,
+.volume-row {
+  display: flex;
+  justify-content: space-between;
+  color: #6c6c68;
+  font-size: 9px;
+}
+.pressure-track {
+  height: 3px;
+  margin: 10px 0 12px;
+  background: #1a1a1a;
+}
+.pressure-track span {
+  display: block;
+  height: 100%;
+  background: #94948f;
+  transition: width .3s linear;
+}
+.volume-row { color: #484846; font-size: 8px; }
+
+.terminal-simple .projection-card {
+  max-width: none;
+  padding: 20px 0 2px;
+  border-bottom: 0;
+}
+.terminal-simple .projection {
+  max-width: none;
+  margin: 0;
+  padding: 4px 0 0;
+}
+.terminal-simple .method-copy {
+  max-width: none;
+  margin: 28px 0 0;
+  padding: 0;
+}

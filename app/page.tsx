@@ -162,16 +162,16 @@ async function rpc(method: string, params: unknown[]) {
 }
 
 function buildChart(trades: TapeTrade[]) {
-  const points = trades.filter((trade) => trade.marketCapSol > 0).slice(-60);
+  const points = trades.filter((trade) => trade.priceSol > 0).slice(-60);
   if (!points.length) return { path: "", area: "", min: 0, max: 0 };
 
-  const values = points.map((trade) => trade.marketCapSol);
+  const values = points.map((trade) => trade.priceSol);
   const min = Math.min(...values);
   const max = Math.max(...values);
   const range = Math.max(max - min, max * 0.002, 1);
   const coords = points.map((trade, index) => {
     const x = points.length === 1 ? 50 : (index / (points.length - 1)) * 100;
-    const y = 88 - ((trade.marketCapSol - min) / range) * 72;
+    const y = 88 - ((trade.priceSol - min) / range) * 72;
     return [x, y] as const;
   });
   const path = coords.map(([x, y], index) => `${index ? "L" : "M"}${x.toFixed(2)},${y.toFixed(2)}`).join(" ");
@@ -358,6 +358,7 @@ export default function Home() {
 
   const chronological = useMemo(() => [...trades].sort((a, b) => a.timestamp - b.timestamp), [trades]);
   const newestFirst = useMemo(() => [...chronological].reverse(), [chronological]);
+  const chart = useMemo(() => buildChart(chronological), [chronological]);
   const projection = useMemo(() => buildRadonProjection(chronological), [chronological]);
   const projectionMax = useMemo(() => Math.max(0.001, ...projection.flat().map(Math.abs)), [projection]);
   /* Compact terminal view deliberately omits summary cards. */
@@ -383,6 +384,7 @@ export default function Home() {
     <main className="terminal-shell terminal-simple">
       <header className="topline">
         <h1>RADON TERMINAL</h1>
+        <a className="github-link" href="https://github.com/joemccann/radon" target="_blank" rel="noreferrer">JOEMCCANN / RADON ↗</a>
       </header>
 
       <section className="workspace">
@@ -410,8 +412,29 @@ export default function Home() {
         </div>
 
         <aside className="analysis-panel">
-          <img className="web-art" src="/rt-logo-transparent.png" alt="ASCII web" />
+          <section className="chart-card">
+            <div className="chart-title"><span>TRADE PRICE / SOL</span><span>LAST 60 TRADES</span></div>
+            <div className="chart-wrap">
+              <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="Recent trade price">
+                <line x1="0" y1="25" x2="100" y2="25" className="chart-gridline" />
+                <line x1="0" y1="50" x2="100" y2="50" className="chart-gridline" />
+                <line x1="0" y1="75" x2="100" y2="75" className="chart-gridline" />
+                {chart.area ? <path d={chart.area} className="chart-area" /> : null}
+                {chart.path ? <path d={chart.path} className="chart-line" /> : null}
+              </svg>
+              <span className="chart-high">{chart.max ? fixed(chart.max, 8) : ""}</span>
+              <span className="chart-low">{chart.min ? fixed(chart.min, 8) : ""}</span>
+            </div>
+          </section>
+
+          <section className="pressure-block">
+            <div className="pressure-labels"><span>BUY {fixed(stats.pressure, 1)}%</span><span>SELL {fixed(100 - stats.pressure, 1)}%</span></div>
+            <div className="pressure-track"><span style={{ width: `${stats.pressure}%` }} /></div>
+            <div className="volume-row"><span>BUY VOL {fixed(stats.buySol, 2)} SOL</span><span>SELL VOL {fixed(stats.sellSol, 2)} SOL</span></div>
+          </section>
+
           <div className="projection-card">
+            <div className="chart-title"><span>RADON MAP</span><span>7 ANGLES / 24 BINS</span></div>
             <div className="projection" aria-label="Discrete Radon projection of transaction flow">
               {projection.map((row, rowIndex) => (
                 <div className="projection-row" key={rowIndex}>
@@ -423,12 +446,10 @@ export default function Home() {
           </div>
           <div className="method-copy">
             <h2>How Radon is used</h2>
-            <p>Each trade becomes a point made from time, size and direction. A discrete Radon transform reads those points from several angles and adds them into the rows above. Repeated activity gathers into brighter characters; scattered activity stays faint.</p>
+            <p>Each confirmed trade becomes a point: horizontal position is time, vertical position is logarithmic trade size, and its weight is positive for a buy or negative for a sell. The page projects those points across seven angles and accumulates them into 24 bins per angle—a small discrete Radon transform. Repeated activity along the same time-and-size pattern gathers into brighter characters, while isolated trades remain faint. The price chart and pressure bar show the same feed without the projection.</p>
           </div>
         </aside>
       </section>
-
-      <footer><span>{new Date().toISOString().slice(0, 19).replace("T", " ")} UTC</span></footer>
     </main>
   );
 

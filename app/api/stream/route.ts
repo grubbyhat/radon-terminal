@@ -1,5 +1,7 @@
-type WorkerResponse = Response & { webSocket?: WebSocket };
-type WorkerSocket = WebSocket & { accept(options?: { allowHalfOpen?: boolean }): void };
+import WebSocket, { type RawData } from "ws";
+
+export const dynamic = "force-dynamic";
+export const maxDuration = 300;
 
 const MINT = "GnwoFdLNPZw9etvTAxPstSvQNHA5msqiQLNU9U78pump";
 
@@ -89,7 +91,7 @@ export async function GET() {
   if (!apiKey) return new Response("Helius is not configured", { status: 503 });
 
   const encoder = new TextEncoder();
-  let heliusSocket: WorkerSocket | undefined;
+  let heliusSocket: WebSocket | undefined;
   let heartbeat: ReturnType<typeof setInterval> | undefined;
   let closed = false;
 
@@ -109,19 +111,11 @@ export async function GET() {
       send("retry: 1200\n\n");
       heartbeat = setInterval(() => send(": rt-heartbeat\n\n"), 20_000);
 
-      void (async () => {
-        try {
-          const upstreamResponse = await fetch(`https://mainnet.helius-rpc.com/?api-key=${encodeURIComponent(apiKey)}`, {
-            headers: { Upgrade: "websocket" },
-          }) as WorkerResponse;
-          heliusSocket = upstreamResponse.webSocket as WorkerSocket | undefined;
-          if (!heliusSocket) throw new Error("Helius WebSocket upgrade failed");
-          heliusSocket.accept({ allowHalfOpen: true });
+      try {
+        heliusSocket = new WebSocket(`wss://mainnet.helius-rpc.com/?api-key=${encodeURIComponent(apiKey)}`);
 
-          heliusSocket.addEventListener("message", (event) => {
-          const text = typeof event.data === "string"
-            ? event.data
-            : new TextDecoder().decode(event.data as ArrayBuffer);
+        heliusSocket.on("message", (data: RawData) => {
+          const text = typeof data === "string" ? data : data.toString();
           let payload: any;
           try { payload = JSON.parse(text); } catch { payload = null; }
 
@@ -167,11 +161,9 @@ export async function GET() {
           }
 
           send(`data: ${text}\n\n`);
-          });
-          heliusSocket.addEventListener("close", finish);
-          heliusSocket.addEventListener("error", finish);
-
-          heliusSocket.send(JSON.stringify({
+        });
+        heliusSocket.on("open", () => {
+          heliusSocket?.send(JSON.stringify({
             jsonrpc: "2.0",
             id: 1,
             method: "transactionSubscribe",
@@ -186,11 +178,13 @@ export async function GET() {
               },
             ],
           }));
-        } catch (error) {
-          send(`event: stream-error\ndata: ${JSON.stringify({ message: error instanceof Error ? error.message : "Stream failed" })}\n\n`);
-          finish();
-        }
-      })();
+        });
+        heliusSocket.on("close", finish);
+        heliusSocket.on("error", finish);
+      } catch (error) {
+        send(`event: stream-error\ndata: ${JSON.stringify({ message: error instanceof Error ? error.message : "Stream failed" })}\n\n`);
+        finish();
+      }
     },
     cancel() {
       closed = true;
