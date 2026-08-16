@@ -50,9 +50,11 @@ a { color: inherit; text-decoration: none; }
 
 .brand-block { display: flex; align-items: center; gap: 14px; }
 .brand-mark {
-  width: 44px; height: 44px; display: grid; place-items: center;
-  border: 1px solid var(--ink); background: var(--ink); color: var(--paper);
-  font: 800 16px/1 var(--font-geist), sans-serif; letter-spacing: -.05em;
+  margin: 0;
+  color: var(--ink);
+  font: 700 11px/1.08 var(--font-geist-mono), monospace;
+  letter-spacing: 0;
+  white-space: pre;
 }
 
 h1, h2, p { margin: 0; }
