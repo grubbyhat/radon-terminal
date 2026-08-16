@@ -382,14 +382,8 @@ export default function Home() {
   return (
     <main className="terminal-shell terminal-simple">
       <header className="topline">
-        <div className="brand-block">
-          <img className="brand-mark" src="/rt-logo.png" alt="Radon Terminal logo" />
-          <h1>RADON TERMINAL</h1>
-        </div>
-        <span className="version">rt.exe</span>
+        <h1>RADON TERMINAL</h1>
       </header>
-
-      <div className="prompt-line"><span>C:\RT&gt;</span> radon --watch</div>
 
       <section className="workspace">
         <div className="tape-panel">
@@ -416,7 +410,7 @@ export default function Home() {
         </div>
 
         <aside className="analysis-panel">
-          <div className="section-heading"><h2>radon_projection</h2></div>
+          <img className="web-art" src="/rt-logo-transparent.png" alt="ASCII web" />
           <div className="projection-card">
             <div className="projection" aria-label="Discrete Radon projection of transaction flow">
               {projection.map((row, rowIndex) => (
@@ -427,10 +421,14 @@ export default function Home() {
               ))}
             </div>
           </div>
+          <div className="method-copy">
+            <h2>How Radon is used</h2>
+            <p>Each trade becomes a point made from time, size and direction. A discrete Radon transform reads those points from several angles and adds them into the rows above. Repeated activity gathers into brighter characters; scattered activity stays faint.</p>
+          </div>
         </aside>
       </section>
 
-      <footer><span>RADON TERMINAL</span><span>{new Date().toISOString().slice(0, 19).replace("T", " ")} UTC</span></footer>
+      <footer><span>{new Date().toISOString().slice(0, 19).replace("T", " ")} UTC</span></footer>
     </main>
   );
 
